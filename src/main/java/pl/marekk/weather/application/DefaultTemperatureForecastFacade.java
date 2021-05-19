@@ -16,6 +16,7 @@ import pl.marekk.weather.exception.Exceptions;
 @Slf4j
 class DefaultTemperatureForecastFacade implements TemperatureForecastFacade {
   private final TemperatureForecastFactory temperatureForecastFactory;
+  private final RequestsLimiter requestsLimiter;
 
   @Override
   public List<LocationTemperatureForecast> filterLocationsWithTomorrowTemperatureHigherThan(
@@ -25,6 +26,7 @@ class DefaultTemperatureForecastFacade implements TemperatureForecastFacade {
           "finding the locations with tomorrow temperature above {} in the given location list {}",
           command.getMinTemp(),
           command.getLocationIds());
+      requestsLimiter.verifyRequestNumbers();
       return tryFilterLocationsWithTomorrowTemperatureHigherThan(command);
     } catch (ResponseStatusException e) {
       LOG.error("error was thrown", e);
@@ -39,6 +41,7 @@ class DefaultTemperatureForecastFacade implements TemperatureForecastFacade {
   public LocationTemperatureForecast fetchTemperatureForecastFor(
       @NonNull String locationId, @NonNull TemperatureUnit temperatureUnit) {
     try {
+      requestsLimiter.verifyRequestNumbers();
       return tryFetchTemperatureForecastFor(locationId, temperatureUnit);
     } catch (ResponseStatusException e) {
       LOG.error("error was thrown", e);

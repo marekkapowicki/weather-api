@@ -17,7 +17,6 @@ public class DailyTemperatureForecastVO {
 
   public static DailyTemperatureForecastVO dailyTemperatureForecast(
       @NonNull LocalDate forecastDate, @NonNull List<TemperatureChunkVO> temperatureChunks) {
-    LOG.info("creating the daily temperature forecast for ");
 
     return new DailyTemperatureForecastVO(forecastDate, temperatureChunks);
   }

@@ -7,11 +7,15 @@ import okhttp3.OkHttpClient.Builder;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.logging.HttpLoggingInterceptor.Level;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @Configuration
 @EnableConfigurationProperties(value = WeatherApiProperties.class)
+@EnableCaching(proxyTargetClass = true)
+@EnableAsync(proxyTargetClass = true)
 class WeatherApplicationConfiguration {
   private static HttpLoggingInterceptor httpLoggingInterceptor(
       HttpLoggingInterceptor.Logger logger) {
@@ -48,8 +52,12 @@ class WeatherApplicationConfiguration {
   }
 
   @Bean
+  DefaultRequestsLimiter requestsLimiter(){
+    return new DefaultRequestsLimiter();
+  }
+  @Bean
   TemperatureForecastFacade temperatureForecastFacade(
-      TemperatureForecastFactory temperatureForecastFactory) {
-    return new DefaultTemperatureForecastFacade(temperatureForecastFactory);
+      TemperatureForecastFactory temperatureForecastFactory, RequestsLimiter requestsLimiter) {
+    return new DefaultTemperatureForecastFacade(temperatureForecastFactory, requestsLimiter);
   }
 }
