@@ -1,0 +1,6 @@
+weather:
+  url: http://api.openweathermap.org/data/2.5/forecast
+  key: a1212c831b278f231a3a37f81f8c98f9
+server:
+  error:
+    include-message: always
