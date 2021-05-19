@@ -4,6 +4,7 @@ import java.io.IOException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.HttpUrl;
+import okhttp3.HttpUrl.Builder;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -56,12 +57,17 @@ class WeatherApiClient {
     if (httpUrl == null) {
       throw Exceptions.illegalState("wrong weather url: " + weatherApiUrl);
     }
-    return httpUrl
-        .newBuilder()
-        .addQueryParameter("id", command.getLocationId())
-        .addQueryParameter("cnt", command.chunksNumberToFetch())
-        .addQueryParameter("units", command.getTemperatureUnit().getTemperatureName())
-        .addQueryParameter("appid", weatherApiKey)
-        .build();
+    final HttpUrl.Builder weatherQueryBuilder =
+        httpUrl
+            .newBuilder()
+            .addQueryParameter("id", command.getLocationId())
+            .addQueryParameter("units", command.getTemperatureUnit().getTemperatureName())
+            .addQueryParameter("appid", weatherApiKey);
+    final Builder urlBuilder = command
+        .chunksNumberToFetch()
+        .map(chunkNumber -> weatherQueryBuilder
+            .addQueryParameter("cnt", String.valueOf(chunkNumber)))
+        .orElse(weatherQueryBuilder);
+    return urlBuilder.build();
   }
 }

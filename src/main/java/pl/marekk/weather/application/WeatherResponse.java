@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -81,6 +82,7 @@ class WeatherResponse {
               entry ->
                   DailyTemperatureForecastVO.dailyTemperatureForecast(
                       entry.getKey(), entry.getValue()))
+          .sorted(Comparator.comparing(DailyTemperatureForecastVO::getForecastDate))
           .collect(Collectors.toList());
     }
   }

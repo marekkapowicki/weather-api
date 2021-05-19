@@ -26,9 +26,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.WebApplicationContext;
-import pl.marekk.weather.application.RetrieveTomorrowTemperatureCommand;
+import pl.marekk.weather.application.RetrieveTemperatureCommand;
 import pl.marekk.weather.application.TemperatureForecastFacade;
 import pl.marekk.weather.domain.LocationTemperatureForecast;
+import pl.marekk.weather.domain.TemperatureUnit;
 import pl.marekk.weather.exception.Exceptions;
 
 @SpringBootTest(classes = WeatherApiControllerTest.Config.class)
@@ -95,8 +96,8 @@ class WeatherApiControllerTest {
     private class MockFacade implements TemperatureForecastFacade {
 
       @Override
-      public List<LocationTemperatureForecast> locationsWithTomorrowTemperatureHigherThan(
-          @NonNull RetrieveTomorrowTemperatureCommand command) {
+      public List<LocationTemperatureForecast> filterLocationsWithTomorrowTemperatureHigherThan(
+          @NonNull RetrieveTemperatureCommand command) {
         if (command.getLocationIds().contains("666")) {
           throw Exceptions.illegalState("fake exception");
         }
@@ -104,6 +105,13 @@ class WeatherApiControllerTest {
             .map(
                 location -> createLocationTemperatureForecast(location, CELCIUS, new ArrayList<>()))
             .collect(Collectors.toList());
+      }
+
+      // TODO implement it for tests
+      @Override
+      public LocationTemperatureForecast fetchTemperatureForecastFor(
+          String locationId, TemperatureUnit temperatureUnit) {
+        return null;
       }
     }
   }

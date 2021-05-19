@@ -9,8 +9,9 @@ import lombok.NonNull;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 /** domain object contains location and the list of daily temperature forecasts in given unit */
+@Getter
 public class LocationTemperatureForecast {
-  @Getter private final String locationId;
+  private final String locationId;
   private final TemperatureUnit temperatureUnit;
   private final List<DailyTemperatureForecastVO> dailyTemperatureForecasts;
 

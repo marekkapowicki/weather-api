@@ -1,6 +1,6 @@
 package pl.marekk.weather.application;
 
-import static pl.marekk.weather.domain.RetrieveDailyTemperatureForLocationCommand.retrieveDailyTemperatureCommand;
+import static pl.marekk.weather.domain.RetrieveDailyTemperatureForLocationCommand.retrieveTomorrowTemperatureCommand;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,21 +16,22 @@ import pl.marekk.weather.domain.TemperatureUnit;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @ToString
-public class RetrieveTomorrowTemperatureCommand {
+public class RetrieveTemperatureCommand {
   private final List<String> locationIds;
   private final TemperatureUnit temperatureUnit;
   private final LocalDateTime currentTime;
   private final double minTemp;
 
-  public static RetrieveTomorrowTemperatureCommand createRetrieveTomorrowTemperatureCommand(
+  public static RetrieveTemperatureCommand createRetrieveTemperatureCommand(
       @NonNull List<String> locationIds, @NonNull TemperatureUnit temperatureUnit, double minTemp) {
-    return new RetrieveTomorrowTemperatureCommand(
+    return new RetrieveTemperatureCommand(
         locationIds, temperatureUnit, LocalDateTime.now(), minTemp);
   }
 
-  List<RetrieveDailyTemperatureForLocationCommand> dailyTemperaturePerLocationCommands() {
+  List<RetrieveDailyTemperatureForLocationCommand>
+      retrieveTomorrowTemperaturePerLocationCommands() {
     return locationIds.stream()
-        .map(location -> retrieveDailyTemperatureCommand(currentTime, location, temperatureUnit))
+        .map(location -> retrieveTomorrowTemperatureCommand(currentTime, location, temperatureUnit))
         .collect(Collectors.toList());
   }
 }
