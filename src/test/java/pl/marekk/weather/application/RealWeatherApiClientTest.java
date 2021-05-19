@@ -14,7 +14,7 @@ import pl.marekk.weather.application.WeatherResponse.MainPart;
 
 @SpringBootTest // TODO use smaller chunk than spring boot
 @RealApiTest
-//@ActiveProfiles("prod")
+// @ActiveProfiles("prod")
 class RealWeatherApiClientTest {
   @Autowired private WeatherApiClient weatherApiClient;
 

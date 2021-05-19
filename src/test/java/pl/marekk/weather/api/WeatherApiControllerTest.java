@@ -51,14 +51,18 @@ class WeatherApiControllerTest {
     // given
     MockMvcRequestSpecification request = given();
     // when
-    ResponseOptions<MockMvcResponse> response = given().spec(request)
-        .get("/api/weather/summary?locations=123&locations=345&minTemperature=26&unit=CELCIUS");
+    ResponseOptions<MockMvcResponse> response =
+        given()
+            .spec(request)
+            .get("/api/weather/summary?locations=123&locations=345&minTemperature=26&unit=CELCIUS");
     // then
     assertThat(response.statusCode()).isEqualTo(200);
     // and
     DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
-    JsonAssertion.assertThatJson(parsedJson).field("['locationIds']").read(List.class).equals(List.of("123", "345"));
-
+    JsonAssertion.assertThatJson(parsedJson)
+        .field("['locationIds']")
+        .read(List.class)
+        .equals(List.of("123", "345"));
   }
 
   @Test
@@ -66,12 +70,12 @@ class WeatherApiControllerTest {
     // given
     MockMvcRequestSpecification request = given();
     // when
-    ResponseOptions<MockMvcResponse> response = given().spec(request)
-        .get("/api/weather/summary?locations=666&locations=345&minTemperature=26&unit=CELCIUS");
+    ResponseOptions<MockMvcResponse> response =
+        given()
+            .spec(request)
+            .get("/api/weather/summary?locations=666&locations=345&minTemperature=26&unit=CELCIUS");
     // then:
     assertThat(response.statusCode()).isEqualTo(500);
-
-
   }
 
   @Configuration
@@ -97,7 +101,8 @@ class WeatherApiControllerTest {
           throw Exceptions.illegalState("fake exception");
         }
         return command.getLocationIds().stream()
-            .map(location -> createLocationTemperatureForecast(location, CELCIUS, new ArrayList<>()))
+            .map(
+                location -> createLocationTemperatureForecast(location, CELCIUS, new ArrayList<>()))
             .collect(Collectors.toList());
       }
     }

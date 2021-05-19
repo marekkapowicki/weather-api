@@ -26,7 +26,7 @@ class TemperatureForecastFactory {
           weatherApiClient.call(command).toDailyTemperatureForecastVO(command.chunksNumberToSkip());
       return createLocationTemperatureForecast(
           command.getLocationId(), command.getTemperatureUnit(), dailyTemperatureForecasts);
-    } catch (ResponseStatusException e){
+    } catch (ResponseStatusException e) {
       LOG.error("error was thrown", e);
       throw e;
     } catch (RuntimeException e) {
@@ -34,5 +34,4 @@ class TemperatureForecastFactory {
       throw Exceptions.illegalState(e.getMessage());
     }
   }
-
 }

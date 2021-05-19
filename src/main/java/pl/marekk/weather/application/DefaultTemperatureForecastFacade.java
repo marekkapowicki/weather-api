@@ -12,6 +12,7 @@ import pl.marekk.weather.domain.LocationTemperatureForecast;
 @Slf4j
 class DefaultTemperatureForecastFacade implements TemperatureForecastFacade {
   private final TemperatureForecastFactory temperatureForecastFactory;
+
   @Override
   public List<LocationTemperatureForecast> locationsWithTomorrowTemperatureHigherThan(
       @NonNull RetrieveTomorrowTemperatureCommand command) {
