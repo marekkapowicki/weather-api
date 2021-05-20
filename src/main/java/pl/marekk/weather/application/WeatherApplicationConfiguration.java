@@ -52,12 +52,8 @@ class WeatherApplicationConfiguration {
   }
 
   @Bean
-  DefaultRequestsLimiter requestsLimiter(){
-    return new DefaultRequestsLimiter();
-  }
-  @Bean
   TemperatureForecastFacade temperatureForecastFacade(
-      TemperatureForecastFactory temperatureForecastFactory, RequestsLimiter requestsLimiter) {
-    return new DefaultTemperatureForecastFacade(temperatureForecastFactory, requestsLimiter);
+      TemperatureForecastFactory temperatureForecastFactory) {
+    return new DefaultTemperatureForecastFacade(temperatureForecastFactory);
   }
 }

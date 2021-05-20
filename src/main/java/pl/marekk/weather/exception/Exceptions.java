@@ -1,5 +1,8 @@
 package pl.marekk.weather.exception;
 
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +14,14 @@ import pl.marekk.weather.application.WeatherErrorResponse;
 @Slf4j
 public class Exceptions {
   public static RuntimeException illegalState(String message) {
-    return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, message);
+    return new ResponseStatusException(INTERNAL_SERVER_ERROR, message);
+  }
+
+  //TODO add counter
+  public static RuntimeException requestsLimitExceeded() {
+    final String message = "requests limit exceeded";
+    LOG.warn(message);
+    return new ResponseStatusException(TOO_MANY_REQUESTS, message);
   }
 
   public static RuntimeException exceptionFromHttpResponse(WeatherErrorResponse errorResponse) {
@@ -25,7 +35,7 @@ public class Exceptions {
       return HttpStatus.valueOf(statusCode);
     } catch (IllegalArgumentException e) {
       LOG.warn("error during mapping http status {}: {}", statusCode, e.getMessage());
-      return HttpStatus.INTERNAL_SERVER_ERROR;
+      return INTERNAL_SERVER_ERROR;
     }
   }
 }

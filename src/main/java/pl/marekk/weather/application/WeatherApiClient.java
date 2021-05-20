@@ -63,11 +63,13 @@ class WeatherApiClient {
             .addQueryParameter("id", command.getLocationId())
             .addQueryParameter("units", command.getTemperatureUnit().getTemperatureName())
             .addQueryParameter("appid", weatherApiKey);
-    final Builder urlBuilder = command
-        .chunksNumberToFetch()
-        .map(chunkNumber -> weatherQueryBuilder
-            .addQueryParameter("cnt", String.valueOf(chunkNumber)))
-        .orElse(weatherQueryBuilder);
+    final Builder urlBuilder =
+        command
+            .chunksNumberToFetch()
+            .map(
+                chunkNumber ->
+                    weatherQueryBuilder.addQueryParameter("cnt", String.valueOf(chunkNumber)))
+            .orElse(weatherQueryBuilder);
     return urlBuilder.build();
   }
 }

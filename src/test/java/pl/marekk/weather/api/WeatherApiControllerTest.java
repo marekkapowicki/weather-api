@@ -26,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.WebApplicationContext;
+import pl.marekk.throttling.RateLimiter;
 import pl.marekk.weather.application.RetrieveTemperatureCommand;
 import pl.marekk.weather.application.TemperatureForecastFacade;
 import pl.marekk.weather.domain.LocationTemperatureForecast;
@@ -85,15 +86,19 @@ class WeatherApiControllerTest {
 
     @Bean
     WeatherApiController controller() {
-      return new WeatherApiController(temperatureForecastFacade());
+      return new WeatherApiController(temperatureForecastFacade(), rateLimiter());
     }
 
+    @Bean
+    RateLimiter rateLimiter(){
+      return new MockRateLimiter();
+    }
     @Bean
     TemperatureForecastFacade temperatureForecastFacade() {
       return new MockFacade();
     }
 
-    private class MockFacade implements TemperatureForecastFacade {
+    private static class MockFacade implements TemperatureForecastFacade {
 
       @Override
       public List<LocationTemperatureForecast> filterLocationsWithTomorrowTemperatureHigherThan(
@@ -112,6 +117,14 @@ class WeatherApiControllerTest {
       public LocationTemperatureForecast fetchTemperatureForecastFor(
           String locationId, TemperatureUnit temperatureUnit) {
         return null;
+      }
+    }
+
+    private static class MockRateLimiter implements RateLimiter {
+
+      @Override
+      public boolean limitIsExceeded(String resourceName) {
+        return false;
       }
     }
   }

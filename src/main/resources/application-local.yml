@@ -1,7 +1,7 @@
 weather:
   url: http://127.0.0.1:9091/forecast
   key: fakeKey
-  maxRequests:
-    number: 3
-    unit: DAYS
-
+rate-limiter:
+  requestsLimit: 3
+  interval: 1
+  intervalUnit: SECONDS

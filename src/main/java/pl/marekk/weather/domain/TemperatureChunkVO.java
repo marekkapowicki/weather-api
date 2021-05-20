@@ -25,7 +25,8 @@ public class TemperatureChunkVO {
   }
 
   public String getDuration() {
-    final String formatDuration = DurationFormatUtils.formatDuration(this.duration.toMillis(), "H:mm", true);
+    final String formatDuration =
+        DurationFormatUtils.formatDuration(this.duration.toMillis(), "H:mm", true);
     return formatDuration + "(H:mm)";
   }
 }

@@ -1,9 +1,10 @@
 weather:
   url: http://api.openweathermap.org/data/2.5/forecast
   key: a1212c831b278f231a3a37f81f8c98f9
-  maxRequests:
-    number: 2
-    unit: DAYS
 server:
   error:
     include-message: always
+rate-limiter:
+  requestsLimit: 2
+  interval: 1
+  intervalUnit: DAYS

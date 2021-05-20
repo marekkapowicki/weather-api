@@ -3,23 +3,6 @@
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>weather</artifactId>
-  <description>Demo project for Spring Boot</description>
-  <groupId>pl.marekk</groupId>
-  <modelVersion>4.0.0</modelVersion>
-  <name>weather</name>
-  <parent>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <groupId>org.springframework.boot</groupId>
-    <relativePath/>
-    <version>2.4.5</version> <!-- lookup parent from repository -->
-  </parent>
-  <properties>
-    <java.version>11</java.version>
-    <okhttp.client.version>4.9.1</okhttp.client.version>
-  </properties>
-
-
-  <version>0.0.1-SNAPSHOT</version>
   <build>
     <plugins>
       <plugin>
@@ -74,6 +57,11 @@
       <version>3.12.0</version>
     </dependency>
 
+    <dependency>
+      <artifactId>guava</artifactId>
+      <groupId>com.google.guava</groupId>
+      <version>30.1.1-jre</version>
+    </dependency>
 
     <dependency>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -107,6 +95,21 @@
       <version>0.6.0</version>
     </dependency>
   </dependencies>
+  <description>Demo project for Spring Boot</description>
+  <groupId>pl.marekk</groupId>
+  <modelVersion>4.0.0</modelVersion>
+  <name>weather</name>
+  <parent>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <groupId>org.springframework.boot</groupId>
+    <relativePath/>
+    <version>2.4.5</version> <!-- lookup parent from repository -->
+  </parent>
+  <properties>
+    <java.version>11</java.version>
+    <okhttp.client.version>4.9.1</okhttp.client.version>
+  </properties>
+  <version>0.0.1-SNAPSHOT</version>
 
 
 </project>
