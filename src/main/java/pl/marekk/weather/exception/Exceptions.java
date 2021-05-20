@@ -17,7 +17,7 @@ public class Exceptions {
     return new ResponseStatusException(INTERNAL_SERVER_ERROR, message);
   }
 
-  //TODO add counter
+  // TODO add counter
   public static RuntimeException requestsLimitExceeded() {
     final String message = "requests limit exceeded";
     LOG.warn(message);

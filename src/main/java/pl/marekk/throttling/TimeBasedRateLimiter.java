@@ -2,6 +2,8 @@ package pl.marekk.throttling;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,22 +16,32 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class TimeBasedRateLimiter implements RateLimiter {
   private final int maxRequestsNumber;
-  private final Storage storage;
+  private final int interval;
+  private final TimeUnit intervalUnit;
+  private final Map<String, LoadingCache<Long, Long>> storage;
 
   static TimeBasedRateLimiter timeBasedRateLimiter(
       final int maxRequestsNumber, final int interval, final TimeUnit intervalUnit) {
     return new TimeBasedRateLimiter(
-        maxRequestsNumber, Storage.storage(interval, intervalUnit));
+        maxRequestsNumber, interval, intervalUnit, new ConcurrentHashMap<>());
   }
 
   @Override
-  public boolean limitIsExceeded(String resourceName) {
-    Long callsCount = storage.takeCallsCount(resourceName);
+  public boolean isLimitExceeded(String resourceName) {
+    Cache<Long, Long> autoExpiringUserCallsCounter =
+        storage.computeIfAbsent(resourceName, k -> buildCacheWhichRemovesEntriesAfterTimeFrame());
+    Long callsCount = autoExpiringUserCallsCounter.size();
     if (requestLimitReached(callsCount)) {
-      LOG.debug("request limit exceeded for {}", resourceName);
-      return true;
+      autoExpiringUserCallsCounter.cleanUp();
+      if (requestLimitReached(autoExpiringUserCallsCounter.size())) {
+        LOG.debug("request limit exceeded for {}", resourceName);
+        return true;
+      }
+      return false;
+
     } else {
-      storage.increaseCounter(resourceName);
+      long randomKeyToIncreaseCounter = new SecureRandom().nextLong();
+      autoExpiringUserCallsCounter.put(randomKeyToIncreaseCounter, randomKeyToIncreaseCounter);
       return false;
     }
   }
@@ -38,39 +50,17 @@ class TimeBasedRateLimiter implements RateLimiter {
     return callsCount != null && callsCount + 1 > maxRequestsNumber;
   }
 
-  @AllArgsConstructor
-  private static final class Storage {
-    private final Map<String, Cache<Long, Long>> cacheStorage;
-    private final int interval;
-    private final TimeUnit intervalUnit;
-
-    static Storage storage(int interval, TimeUnit intervalUnit) {
-
-      return new Storage(new ConcurrentHashMap<>(), interval, intervalUnit);
-    }
-
-    private static Cache<Long, Long> buildCacheWhichRemovesEntriesAfterTimeFrame(
-        int interval, TimeUnit intervalUnit) {
-      return CacheBuilder.newBuilder()
-          .concurrencyLevel(5)
-          .expireAfterWrite(interval, intervalUnit)
-          .build();
-    }
-
-    void increaseCounter(String key) {
-      long randomKeyToIncreaseCounter = new SecureRandom().nextLong();
-      getAutoExpiringUserCallsCounter(key)
-          .put(randomKeyToIncreaseCounter, randomKeyToIncreaseCounter);
-    }
-
-    long takeCallsCount(String key) {
-      Cache<Long, Long> autoExpiringUserCallsCounter = getAutoExpiringUserCallsCounter(key);
-      return autoExpiringUserCallsCounter.size();
-    }
-
-    private Cache<Long, Long> getAutoExpiringUserCallsCounter(String key) {
-      return cacheStorage.computeIfAbsent(
-          key, k -> buildCacheWhichRemovesEntriesAfterTimeFrame(interval, intervalUnit));
-    }
+  private LoadingCache<Long, Long> buildCacheWhichRemovesEntriesAfterTimeFrame() {
+    return CacheBuilder.newBuilder()
+        .removalListener(notification -> LOG.debug(notification.getKey() + " removed"))
+        .refreshAfterWrite(interval, intervalUnit)
+        .expireAfterWrite(interval, intervalUnit)
+        .build(
+            new CacheLoader<>() {
+              @Override
+              public Long load(Long key) {
+                return 0L;
+              }
+            });
   }
 }

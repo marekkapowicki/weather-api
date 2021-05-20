@@ -5,6 +5,6 @@ server:
   error:
     include-message: always
 rate-limiter:
-  requestsLimit: 2
+  requestsLimit: 1000
   interval: 1
   intervalUnit: DAYS

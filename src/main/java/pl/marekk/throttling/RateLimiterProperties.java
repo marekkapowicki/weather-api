@@ -17,6 +17,5 @@ class RateLimiterProperties {
   @Min(1)
   private int interval;
 
-  @NotNull
-  private TimeUnit intervalUnit;
+  @NotNull private TimeUnit intervalUnit;
 }

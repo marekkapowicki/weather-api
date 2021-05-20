@@ -7,5 +7,5 @@ public interface RateLimiter {
     return TimeBasedRateLimiter.timeBasedRateLimiter(requestsLimit, interval, intervalUnit);
   }
 
-  boolean limitIsExceeded(String resourceName);
+  boolean isLimitExceeded(String resourceName);
 }

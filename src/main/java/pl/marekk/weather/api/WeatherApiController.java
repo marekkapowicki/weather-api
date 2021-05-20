@@ -44,11 +44,10 @@ public class WeatherApiController implements WeatherApi {
     return TemperatureInLocationDto.fromDomainObject(locationTemperatureForecast);
   }
 
-  //TODO use as annotation
-  private void checkRequestsLimit(){
-    if(rateLimiter.limitIsExceeded("weather-api")){
+  // TODO use as annotation
+  private void checkRequestsLimit() {
+    if (rateLimiter.isLimitExceeded("weather-api")) {
       throw Exceptions.requestsLimitExceeded();
     }
-
   }
 }

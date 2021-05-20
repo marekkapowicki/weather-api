@@ -2,12 +2,7 @@ package pl.marekk.weather.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.marekk.weather.domain.LocationTemperatureForecast.createLocationTemperatureForecast;
-import static pl.marekk.weather.domain.TemperatureUnit.CELCIUS;
 
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import com.toomuchcoding.jsonassert.JsonAssertion;
 import io.restassured.config.EncoderConfig;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.restassured.module.mockmvc.config.RestAssuredMockMvcConfig;
@@ -16,7 +11,7 @@ import io.restassured.module.mockmvc.specification.MockMvcRequestSpecification;
 import io.restassured.response.ResponseOptions;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.LongAdder;
 import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,10 +26,9 @@ import pl.marekk.weather.application.RetrieveTemperatureCommand;
 import pl.marekk.weather.application.TemperatureForecastFacade;
 import pl.marekk.weather.domain.LocationTemperatureForecast;
 import pl.marekk.weather.domain.TemperatureUnit;
-import pl.marekk.weather.exception.Exceptions;
 
-@SpringBootTest(classes = WeatherApiControllerTest.Config.class)
-class WeatherApiControllerTest {
+@SpringBootTest(classes = WeatherApiControllerThrottlingTest.Config.class)
+class WeatherApiControllerThrottlingTest {
 
   @Autowired WebApplicationContext webApplicationContext;
 
@@ -49,35 +43,20 @@ class WeatherApiControllerTest {
   }
 
   @Test
-  void takeLocationsWithTemperatureAboveHappyPath() {
+  void limitExceededIn3rdShot() {
     // given
     MockMvcRequestSpecification request = given();
-    // when
-    ResponseOptions<MockMvcResponse> response =
-        given()
-            .spec(request)
-            .get("/api/weather/summary?locations=123&locations=345&minTemperature=26&unit=CELCIUS");
-    // then
-    assertThat(response.statusCode()).isEqualTo(200);
-    // and
-    DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
-    JsonAssertion.assertThatJson(parsedJson)
-        .field("['locationIds']")
-        .read(List.class)
-        .equals(List.of("123", "345"));
-  }
-
-  @Test
-  void takeLocationsWithTemperatureAboveExceptionalPath() {
-    // given
-    MockMvcRequestSpecification request = given();
-    // when
-    ResponseOptions<MockMvcResponse> response =
-        given()
-            .spec(request)
-            .get("/api/weather/summary?locations=666&locations=345&minTemperature=26&unit=CELCIUS");
-    // then:
-    assertThat(response.statusCode()).isEqualTo(500);
+    // 1st shot
+    final String url =
+        "/api/weather/summary?locations=123&locations=345&minTemperature=26&unit=CELCIUS";
+    ResponseOptions<MockMvcResponse> response1 = given().spec(request).get(url);
+    assertThat(response1.statusCode()).isEqualTo(200);
+    // and 2nd shot
+    ResponseOptions<MockMvcResponse> response2 = given().spec(request).get(url);
+    assertThat(response2.statusCode()).isEqualTo(200);
+    // then limit exceeded
+    ResponseOptions<MockMvcResponse> response3 = given().spec(request).get(url);
+    assertThat(response3.statusCode()).isEqualTo(429);
   }
 
   @Configuration
@@ -91,7 +70,7 @@ class WeatherApiControllerTest {
 
     @Bean
     RateLimiter rateLimiter() {
-      return new MockRateLimiter();
+      return new MockTwoShotsRateLimiter();
     }
 
     @Bean
@@ -104,13 +83,7 @@ class WeatherApiControllerTest {
       @Override
       public List<LocationTemperatureForecast> filterLocationsWithTomorrowTemperatureHigherThan(
           @NonNull RetrieveTemperatureCommand command) {
-        if (command.getLocationIds().contains("666")) {
-          throw Exceptions.illegalState("fake exception");
-        }
-        return command.getLocationIds().stream()
-            .map(
-                location -> createLocationTemperatureForecast(location, CELCIUS, new ArrayList<>()))
-            .collect(Collectors.toList());
+        return new ArrayList<>();
       }
 
       // TODO implement it for tests
@@ -121,11 +94,15 @@ class WeatherApiControllerTest {
       }
     }
 
-    private static class MockRateLimiter implements RateLimiter {
+    private static class MockTwoShotsRateLimiter implements RateLimiter {
+
+      private final LongAdder counter = new LongAdder();
+      private int maxLimit = 2;
 
       @Override
       public boolean isLimitExceeded(String resourceName) {
-        return false;
+        counter.increment();
+        return counter.intValue() > maxLimit;
       }
     }
   }
